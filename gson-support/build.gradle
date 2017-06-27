@@ -37,15 +37,16 @@ android {
 }
 
 dependencies {
-    provided "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-    compile project(":kotpref")
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    api project(":kotpref")
 
-    provided 'com.google.code.gson:gson:2.8.0'
+    implementation 'com.google.code.gson:gson:2.8.0'
 
-    testCompile "junit:junit:$junitVersion"
-    testCompile "org.robolectric:robolectric:$robolectricVersion"
-    testCompile "com.android.support.test:testing-support-lib:$testingVersion"
-    testCompile "org.assertj:assertj-core:$assertjVersion"
+    testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "org.robolectric:robolectric:$robolectricVersion"
+    testImplementation "com.android.support.test:testing-support-lib:$testingVersion"
+    testImplementation "org.assertj:assertj-core:$assertjVersion"
 }
 
 buildscript {

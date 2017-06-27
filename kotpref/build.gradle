@@ -39,12 +39,13 @@ android {
 }
 
 dependencies {
-    provided "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
-    testCompile "junit:junit:$junitVersion"
-    testCompile "org.robolectric:robolectric:$robolectricVersion"
-    testCompile "com.android.support.test:testing-support-lib:$testingVersion"
-    testCompile "org.assertj:assertj-core:$assertjVersion"
+    testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "org.robolectric:robolectric:$robolectricVersion"
+    testImplementation "com.android.support.test:testing-support-lib:$testingVersion"
+    testImplementation "org.assertj:assertj-core:$assertjVersion"
 }
 
 buildscript {
