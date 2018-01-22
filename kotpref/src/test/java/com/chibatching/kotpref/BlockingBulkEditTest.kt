@@ -5,16 +5,26 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.ParameterizedRobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import java.util.*
+import kotlin.collections.HashSet
 
 
-@RunWith(KotprefTestRunner::class)
-class BlockingBulkEditTest {
+@RunWith(ParameterizedRobolectricTestRunner::class)
+class BlockingBulkEditTest(private val commitAllProperties: Boolean) {
+    companion object {
+        @JvmStatic
+        @ParameterizedRobolectricTestRunner.Parameters(name = "commitAllProperties = {0}")
+        fun data(): Collection<Array<out Any>> {
+            return Arrays.asList(arrayOf(false), arrayOf(true))
+        }
+    }
 
     lateinit var example: Example
     lateinit var context: Context
@@ -24,9 +34,9 @@ class BlockingBulkEditTest {
     fun setUp() {
         context = RuntimeEnvironment.application
         Kotpref.init(context)
-        example = Example()
+        example = Example(commitAllProperties)
 
-        pref = context.getSharedPreferences(example.javaClass.simpleName, Context.MODE_PRIVATE)
+        pref = example.preferences
         pref.edit().clear().commit()
     }
 
@@ -239,18 +249,22 @@ class BlockingBulkEditTest {
             add("test3")
         }
 
-        example.blockingBulk {
-            val iterator = example.testStringSet.iterator()
-            iterator.next()
-            iterator.remove()
-            iterator.next()
-            iterator.remove()
+        val originalCopy = HashSet<String>(example.testStringSet)
+        val deletedItem = HashSet<String>()
 
-            Assertions.assertThat(example.testStringSet).containsExactlyInAnyOrder("test3")
-            Assertions.assertThat(pref.getStringSet("testStringSet", null)).containsExactlyInAnyOrder("test1", "test2", "test3")
+        example.blockingBulk {
+            example.testStringSet.iterator().let { iterator ->
+                deletedItem.add(iterator.next())
+                iterator.remove()
+                deletedItem.add(iterator.next())
+                iterator.remove()
+            }
+
+            assertThat(example.testStringSet).containsAll(originalCopy - deletedItem)
+            assertThat(pref.getStringSet("testStringSet", null)).containsAll(originalCopy)
         }
 
-        Assertions.assertThat(example.testStringSet).containsExactlyInAnyOrder("test3")
-        Assertions.assertThat(pref.getStringSet("testStringSet", null)).containsExactlyInAnyOrder("test3")
+        assertThat(example.testStringSet).containsAll(originalCopy - deletedItem)
+        assertThat(pref.getStringSet("testStringSet", null)).containsAll(originalCopy - deletedItem)
     }
 }

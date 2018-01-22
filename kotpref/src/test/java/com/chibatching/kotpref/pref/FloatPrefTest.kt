@@ -1,14 +1,22 @@
 package com.chibatching.kotpref.pref
 
-import com.chibatching.kotpref.KotprefTestRunner
 import com.chibatching.kotpref.R
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.ParameterizedRobolectricTestRunner
+import java.util.*
 
 
-@RunWith(KotprefTestRunner::class)
-class FloatPrefTest : BasePrefTest() {
+@RunWith(ParameterizedRobolectricTestRunner::class)
+class FloatPrefTest(commitAllProperties: Boolean) : BasePrefTest(commitAllProperties) {
+    companion object {
+        @JvmStatic
+        @ParameterizedRobolectricTestRunner.Parameters(name = "commitAllProperties = {0}")
+        fun data(): Collection<Array<out Any>> {
+            return Arrays.asList(arrayOf(false), arrayOf(true))
+        }
+    }
 
     @Test
     fun floatPrefDefaultIs0() {

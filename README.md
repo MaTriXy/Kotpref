@@ -2,7 +2,7 @@
 
 Android SharedPreference delegation for Kotlin.
 
-[![wercker status](https://app.wercker.com/status/dd188c571c2416d90eb24133d9bcfa83/s/master "wercker status")](https://app.wercker.com/project/byKey/dd188c571c2416d90eb24133d9bcfa83) [![kotlin](https://img.shields.io/badge/kotlin-1.1.3-blue.svg)]() [![codecov](https://codecov.io/gh/chibatching/Kotpref/branch/master/graph/badge.svg)](https://codecov.io/gh/chibatching/Kotpref) [![license](https://img.shields.io/github/license/chibatching/Kotpref.svg?maxAge=2592000)]()
+[![wercker status](https://app.wercker.com/status/dd188c571c2416d90eb24133d9bcfa83/s/master "wercker status")](https://app.wercker.com/project/byKey/dd188c571c2416d90eb24133d9bcfa83) [![kotlin](https://img.shields.io/badge/kotlin-1.2.10-blue.svg)]() [![codecov](https://codecov.io/gh/chibatching/Kotpref/branch/master/graph/badge.svg)](https://codecov.io/gh/chibatching/Kotpref) [![license](https://img.shields.io/github/license/chibatching/Kotpref.svg?maxAge=2592000)]()
 
 ## Install
 
@@ -10,10 +10,10 @@ Android SharedPreference delegation for Kotlin.
 
 ```groovy
 dependencies {
-    compile "com.chibatching.kotpref:kotpref:2.1.2"
-    compile "com.chibatching.kotpref:initializer:2.1.2" // optional
-    compile "com.chibatching.kotpref:enum-support:2.1.2" // optional
-    compile "com.chibatching.kotpref:gson-support:2.1.2" // optional
+    compile "com.chibatching.kotpref:kotpref:2.3.0"
+    compile "com.chibatching.kotpref:initializer:2.3.0" // optional
+    compile "com.chibatching.kotpref:enum-support:2.3.0" // optional
+    compile "com.chibatching.kotpref:gson-support:2.3.0" // optional
 }
 ```
 
@@ -140,6 +140,22 @@ var useFunc1: Boolean by booleanPref(key = "use_func1")
 var mode: Int by intPref(default = 1, key = R.string.pref_mode)
 ```
 
+### Change default save mode
+
+Kotpref save all preference property by `apply` method.
+You can change method to `commit` for each property.
+
+```kotlin
+var age: Int by intPref(default = 18, commitByDefault = true)
+```
+
+Or change default for each KotprefModel.
+
+```kotpref
+object UserInfo : KotprefModel() {
+    override val commitAllPropertiesByDefault: Boolean = true
+```
+
 #### Change XML file name
 
 Override `kotprefName` property.
@@ -174,7 +190,7 @@ If you wish to use auto initialization, you should import initializer module.
 ## License
 
 ```
-Copyright 2015-2017 Takao Chiba
+Copyright 2015-2018 Takao Chiba
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

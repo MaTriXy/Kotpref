@@ -10,7 +10,7 @@ import org.junit.Before
 import org.robolectric.RuntimeEnvironment
 
 
-abstract class BasePrefTest {
+abstract class BasePrefTest(private val commitAllProperties: Boolean) {
 
     lateinit var example: Example
     lateinit var customExample: CustomExample
@@ -22,13 +22,13 @@ abstract class BasePrefTest {
     fun setUp() {
         context = RuntimeEnvironment.application
         Kotpref.init(context)
-        example = Example()
-        customExample = CustomExample()
+        example = Example(commitAllProperties)
+        customExample = CustomExample(commitAllProperties)
 
-        examplePref = context.getSharedPreferences(example.javaClass.simpleName, Context.MODE_PRIVATE)
+        examplePref = example.preferences
         examplePref.edit().clear().commit()
 
-        customPref = context.getSharedPreferences(CustomExample.PREFERENCE_NAME, Context.MODE_PRIVATE)
+        customPref = customExample.preferences
         customPref.edit().clear().commit()
     }
 

@@ -1,7 +1,9 @@
 package com.chibatching.kotpref
 
+import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Build
 import com.chibatching.kotpref.pref.*
 import java.util.*
@@ -25,12 +27,17 @@ abstract class KotprefModel {
     protected open val kotprefName: String = javaClass.simpleName
 
     /**
+     * commit() all properties in this pref by default instead of apply()
+     */
+    open val commitAllPropertiesByDefault: Boolean = false
+
+    /**
      * Preference read/write mode
      */
     protected open val kotprefMode: Int = Context.MODE_PRIVATE
 
     /**
-     * Internal shared preference.
+     * Internal shared preferences.
      * This property will be initialized on use.
      */
     internal val kotprefPreference: KotprefPreferences by lazy {
@@ -38,9 +45,16 @@ abstract class KotprefModel {
     }
 
     /**
-     * Internal shared preference editor.
+     * Internal shared preferences editor.
      */
     internal var kotprefEditor: KotprefPreferences.KotprefEditor? = null
+
+    /**
+     * SharedPreferences instance exposed.
+     * Use carefully when during bulk edit, it may cause inconsistent with internal data of Kotpref.
+     */
+    val preferences: SharedPreferences
+        get() = kotprefPreference.preferences
 
     /**
      * Clear all preferences in this model
@@ -52,140 +66,157 @@ abstract class KotprefModel {
     }
 
     /**
-     * Delegate string shared preference property.
+     * Delegate string shared preferences property.
      * @param default default string value
-     * @param key custom preference key
+     * @param key custom preferences key
+     * @param commitByDefault commit this property instead of apply
      */
-    protected fun stringPref(default: String = "", key: String? = null)
-            : ReadWriteProperty<KotprefModel, String> = StringPref(default, key)
+    protected fun stringPref(default: String = "", key: String? = null, commitByDefault: Boolean = commitAllPropertiesByDefault)
+            : ReadWriteProperty<KotprefModel, String> = StringPref(default, key, commitByDefault)
 
     /**
-     * Delegate string shared preference property.
+     * Delegate string shared preferences property.
      * @param default default string value
-     * @param key custom preference key resource id
+     * @param key custom preferences key resource id
+     * @param commitByDefault commit this property instead of apply
      */
-    protected fun stringPref(default: String = "", key: Int)
-            : ReadWriteProperty<KotprefModel, String> = stringPref(default, context.getString(key))
+    protected fun stringPref(default: String = "", key: Int, commitByDefault: Boolean = commitAllPropertiesByDefault)
+            : ReadWriteProperty<KotprefModel, String> = stringPref(default, context.getString(key), commitByDefault)
 
     /**
-     * Delegate nullable string shared preference property.
+     * Delegate nullable string shared preferences property.
      * @param default default string value
-     * @param key custom preference key
+     * @param key custom preferences key
+     * @param commitByDefault commit this property instead of apply
      */
-    protected fun nullableStringPref(default: String? = null, key: String? = null)
-            : ReadWriteProperty<KotprefModel, String?> = StringNullablePref(default, key)
+    protected fun nullableStringPref(default: String? = null, key: String? = null, commitByDefault: Boolean = commitAllPropertiesByDefault)
+            : ReadWriteProperty<KotprefModel, String?> = StringNullablePref(default, key, commitByDefault)
 
     /**
-     * Delegate nullable string shared preference property.
+     * Delegate nullable string shared preferences property.
      * @param default default string value
-     * @param key custom preference key resource id
+     * @param key custom preferences key resource id
+     * @param commitByDefault commit this property instead of apply
      */
-    protected fun nullableStringPref(default: String? = null, key: Int)
-            : ReadWriteProperty<KotprefModel, String?> = nullableStringPref(default, context.getString(key))
+    protected fun nullableStringPref(default: String? = null, key: Int, commitByDefault: Boolean = commitAllPropertiesByDefault)
+            : ReadWriteProperty<KotprefModel, String?> = nullableStringPref(default, context.getString(key), commitByDefault)
 
     /**
-     * Delegate int shared preference property.
+     * Delegate int shared preferences property.
      * @param default default int value
-     * @param key custom preference key
+     * @param key custom preferences key
+     * @param commitByDefault commit this property instead of apply
      */
-    protected fun intPref(default: Int = 0, key: String? = null)
-            : ReadWriteProperty<KotprefModel, Int> = IntPref(default, key)
+    protected fun intPref(default: Int = 0, key: String? = null, commitByDefault: Boolean = commitAllPropertiesByDefault)
+            : ReadWriteProperty<KotprefModel, Int> = IntPref(default, key, commitByDefault)
 
     /**
-     * Delegate int shared preference property.
+     * Delegate int shared preferences property.
      * @param default default int value
-     * @param key custom preference key resource id
+     * @param key custom preferences key resource id
+     * @param commitByDefault commit this property instead of apply
      */
-    protected fun intPref(default: Int = 0, key: Int)
-            : ReadWriteProperty<KotprefModel, Int> = intPref(default, context.getString(key))
+    protected fun intPref(default: Int = 0, key: Int, commitByDefault: Boolean = commitAllPropertiesByDefault)
+            : ReadWriteProperty<KotprefModel, Int> = intPref(default, context.getString(key), commitByDefault)
 
     /**
-     * Delegate long shared preference property.
+     * Delegate long shared preferences property.
      * @param default default long value
-     * @param key custom preference key
+     * @param key custom preferences key
+     * @param commitByDefault commit this property instead of apply
      */
-    protected fun longPref(default: Long = 0L, key: String? = null)
-            : ReadWriteProperty<KotprefModel, Long> = LongPref(default, key)
+    protected fun longPref(default: Long = 0L, key: String? = null, commitByDefault: Boolean = commitAllPropertiesByDefault)
+            : ReadWriteProperty<KotprefModel, Long> = LongPref(default, key, commitByDefault)
 
     /**
-     * Delegate long shared preference property.
+     * Delegate long shared preferences property.
      * @param default default long value
-     * @param key custom preference key resource id
+     * @param key custom preferences key resource id
+     * @param commitByDefault commit this property instead of apply
      */
-    protected fun longPref(default: Long = 0L, key: Int)
-            : ReadWriteProperty<KotprefModel, Long> = longPref(default, context.getString(key))
+    protected fun longPref(default: Long = 0L, key: Int, commitByDefault: Boolean = commitAllPropertiesByDefault)
+            : ReadWriteProperty<KotprefModel, Long> = longPref(default, context.getString(key), commitByDefault)
 
     /**
-     * Delegate float shared preference property.
+     * Delegate float shared preferences property.
      * @param default default float value
-     * @param key custom preference key
+     * @param key custom preferences key
+     * @param commitByDefault commit this property instead of apply
      */
-    protected fun floatPref(default: Float = 0F, key: String? = null)
-            : ReadWriteProperty<KotprefModel, Float> = FloatPref(default, key)
+    protected fun floatPref(default: Float = 0F, key: String? = null, commitByDefault: Boolean = commitAllPropertiesByDefault)
+            : ReadWriteProperty<KotprefModel, Float> = FloatPref(default, key, commitByDefault)
 
     /**
-     * Delegate float shared preference property.
+     * Delegate float shared preferences property.
      * @param default default float value
-     * @param key custom preference key resource id
+     * @param key custom preferences key resource id
+     * @param commitByDefault commit this property instead of apply
      */
-    protected fun floatPref(default: Float = 0F, key: Int)
-            : ReadWriteProperty<KotprefModel, Float> = floatPref(default, context.getString(key))
+    protected fun floatPref(default: Float = 0F, key: Int, commitByDefault: Boolean = commitAllPropertiesByDefault)
+            : ReadWriteProperty<KotprefModel, Float> = floatPref(default, context.getString(key), commitByDefault)
 
     /**
-     * Delegate boolean shared preference property.
+     * Delegate boolean shared preferences property.
      * @param default default boolean value
-     * @param key custom preference key
+     * @param key custom preferences key
+     * @param commitByDefault commit this property instead of apply
      */
-    protected fun booleanPref(default: Boolean = false, key: String? = null)
-            : ReadWriteProperty<KotprefModel, Boolean> = BooleanPref(default, key)
+    protected fun booleanPref(default: Boolean = false, key: String? = null, commitByDefault: Boolean = commitAllPropertiesByDefault)
+            : ReadWriteProperty<KotprefModel, Boolean> = BooleanPref(default, key, commitByDefault)
 
     /**
-     * Delegate boolean shared preference property.
+     * Delegate boolean shared preferences property.
      * @param default default boolean value
-     * @param key custom preference key resource id
+     * @param key custom preferences key resource id
+     * @param commitByDefault commit this property instead of apply
      */
-    protected fun booleanPref(default: Boolean = false, key: Int)
-            : ReadWriteProperty<KotprefModel, Boolean> = booleanPref(default, context.getString(key))
+    protected fun booleanPref(default: Boolean = false, key: Int, commitByDefault: Boolean = commitAllPropertiesByDefault)
+            : ReadWriteProperty<KotprefModel, Boolean> = booleanPref(default, context.getString(key), commitByDefault)
 
     /**
-     * Delegate string set shared preference property.
+     * Delegate string set shared preferences property.
      * @param default default string set value
-     * @param key custom preference key
+     * @param key custom preferences key
+     * @param commitByDefault commit this property instead of apply
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    protected fun stringSetPref(default: Set<String> = LinkedHashSet<String>(), key: String? = null)
-            : ReadOnlyProperty<KotprefModel, MutableSet<String>> = stringSetPref(key) { default }
+    protected fun stringSetPref(default: Set<String> = LinkedHashSet<String>(), key: String? = null, commitByDefault: Boolean = commitAllPropertiesByDefault)
+            : ReadOnlyProperty<KotprefModel, MutableSet<String>> = stringSetPref(key, commitByDefault) { default }
 
     /**
-     * Delegate string set shared preference property.
+     * Delegate string set shared preferences property.
      * @param default default string set value
-     * @param key custom preference key resource id
+     * @param key custom preferences key resource id
+     * @param commitByDefault commit this property instead of apply
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    protected fun stringSetPref(default: Set<String> = LinkedHashSet<String>(), key: Int)
-            : ReadOnlyProperty<KotprefModel, MutableSet<String>> = stringSetPref(context.getString(key)) { default }
+    protected fun stringSetPref(default: Set<String> = LinkedHashSet<String>(), key: Int, commitByDefault: Boolean = commitAllPropertiesByDefault)
+            : ReadOnlyProperty<KotprefModel, MutableSet<String>> = stringSetPref(context.getString(key), commitByDefault) { default }
 
     /**
-     * Delegate string set shared preference property.
-     * @param key custom preference key
+     * Delegate string set shared preferences property.
+     * @param key custom preferences key
+     * @param commitByDefault commit this property instead of apply
      * @param default default string set value creation function
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    protected fun stringSetPref(key: String? = null, default: () -> Set<String>)
-            : ReadOnlyProperty<KotprefModel, MutableSet<String>> = StringSetPref(default, key)
+    protected fun stringSetPref(key: String? = null, commitByDefault: Boolean = commitAllPropertiesByDefault, default: () -> Set<String>)
+            : ReadOnlyProperty<KotprefModel, MutableSet<String>> = StringSetPref(default, key, commitByDefault)
 
     /**
-     * Delegate string set shared preference property.
-     * @param key custom preference key resource id
+     * Delegate string set shared preferences property.
+     * @param key custom preferences key resource id
+     * @param commitByDefault commit this property instead of apply
      * @param default default string set value
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    protected fun stringSetPref(key: Int, default: () -> Set<String>)
-            : ReadOnlyProperty<KotprefModel, MutableSet<String>> = stringSetPref(context.getString(key), default)
+    protected fun stringSetPref(key: Int, commitByDefault: Boolean = commitAllPropertiesByDefault, default: () -> Set<String>)
+            : ReadOnlyProperty<KotprefModel, MutableSet<String>> = stringSetPref(context.getString(key), commitByDefault, default)
 
     /**
      * Begin bulk edit mode. You must commit or cancel after bulk edit finished.
      */
+    @SuppressLint("CommitPrefEdits")
     fun beginBulkEdit() {
         kotprefInTransaction = true
         kotprefTransactionStartTime = System.currentTimeMillis()

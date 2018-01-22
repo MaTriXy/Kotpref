@@ -4,21 +4,27 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.chibatching.kotpref.Kotpref
 import com.chibatching.kotpref.KotprefModel
-import com.chibatching.kotpref.KotprefTestRunner
 import com.google.gson.Gson
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.ParameterizedRobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import java.util.*
 
 
-@RunWith(KotprefTestRunner::class)
-class GsonSupportTest {
+@RunWith(ParameterizedRobolectricTestRunner::class)
+class GsonSupportTest(private val commitAllProperties: Boolean) {
 
     companion object {
+        @JvmStatic
+        @ParameterizedRobolectricTestRunner.Parameters(name = "commitAllProperties = {0}")
+        fun data(): Collection<Array<out Any>> {
+            return Arrays.asList(arrayOf(false), arrayOf(true))
+        }
+
         fun createDefaultContent(): Content
                 = Content("default title", "contents write here", createDate(2017, 1, 5))
 
@@ -32,7 +38,10 @@ class GsonSupportTest {
                 }.time
     }
 
-    class Example : KotprefModel() {
+    class Example(private val commitAllProperties: Boolean) : KotprefModel() {
+        override val commitAllPropertiesByDefault: Boolean
+            get() = commitAllProperties
+
         var content by gsonPref(createDefaultContent())
 
         var nullableContent: Content? by gsonNullablePref()
@@ -47,9 +56,9 @@ class GsonSupportTest {
         context = RuntimeEnvironment.application
         Kotpref.init(context)
         Kotpref.gson = Gson()
-        example = Example()
+        example = Example(commitAllProperties)
 
-        pref = context.getSharedPreferences(example.javaClass.simpleName, Context.MODE_PRIVATE)
+        pref = example.preferences
         pref.edit().clear().commit()
     }
 
