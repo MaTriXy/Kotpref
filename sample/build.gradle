@@ -1,20 +1,21 @@
+import dependencies.Deps
+import dependencies.Versions
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-
-ext.SDK_VERSION = sdkVersion
-ext.MIN_SDK = minSdkVersion
-ext.BUILD_TOOLS = buildToolsVersion
+apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion SDK_VERSION
-    buildToolsVersion BUILD_TOOLS
+    compileSdkVersion Versions.targetSdk
+    buildToolsVersion Versions.buildTools
 
     defaultConfig {
         applicationId "com.chibatching.kotprefsample"
-        minSdkVersion 14
-        targetSdkVersion SDK_VERSION
+        minSdkVersion Versions.minSdkWithSupportLibrary
+        targetSdkVersion Versions.targetSdk
         versionCode 1
         versionName "1.0"
+        vectorDrawables.useSupportLibrary = true
     }
     buildTypes {
         debug {
@@ -32,27 +33,27 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support:appcompat-v7:27.0.1'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    implementation Deps.SupportLibrary.supportV4
+    implementation Deps.SupportLibrary.appCompatV7
+    implementation Deps.SupportLibrary.preferenceV7
+    implementation Deps.Kotlin.stdlib
+
+    // core
     implementation project(":kotpref")
+
+    // initializer
     implementation project(":initializer")
+
+    // enum support
     implementation project(":enum-support")
+
+    // gson support
     implementation project(":gson-support")
+    implementation Deps.gson
+
+    // LiveData support
+    implementation project(":livedata-support")
+    implementation Deps.Arch.liveData
+    implementation Deps.Kotlin.reflect
 }
 
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-    }
-}
-
-repositories {
-    jcenter()
-    google()
-    maven {
-        url "https://oss.jfrog.org/libs-snapshot/"
-    }
-}

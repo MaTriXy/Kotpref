@@ -2,18 +2,29 @@
 
 Android SharedPreference delegation for Kotlin.
 
-[![wercker status](https://app.wercker.com/status/dd188c571c2416d90eb24133d9bcfa83/s/master "wercker status")](https://app.wercker.com/project/byKey/dd188c571c2416d90eb24133d9bcfa83) [![kotlin](https://img.shields.io/badge/kotlin-1.2.10-blue.svg)]() [![codecov](https://codecov.io/gh/chibatching/Kotpref/branch/master/graph/badge.svg)](https://codecov.io/gh/chibatching/Kotpref) [![license](https://img.shields.io/github/license/chibatching/Kotpref.svg?maxAge=2592000)]()
+[![wercker status](https://app.wercker.com/status/dd188c571c2416d90eb24133d9bcfa83/s/master "wercker status")](https://app.wercker.com/project/byKey/dd188c571c2416d90eb24133d9bcfa83) [![kotlin](https://img.shields.io/badge/kotlin-1.2.21-blue.svg)]() [![codecov](https://codecov.io/gh/chibatching/Kotpref/branch/master/graph/badge.svg)](https://codecov.io/gh/chibatching/Kotpref) [![license](https://img.shields.io/github/license/chibatching/Kotpref.svg?maxAge=2592000)]()
 
 ## Install
 
-**Kotpref version 2 has destructive changes from version 1**
-
 ```groovy
 dependencies {
-    compile "com.chibatching.kotpref:kotpref:2.3.0"
-    compile "com.chibatching.kotpref:initializer:2.3.0" // optional
-    compile "com.chibatching.kotpref:enum-support:2.3.0" // optional
-    compile "com.chibatching.kotpref:gson-support:2.3.0" // optional
+    // core
+    compile 'com.chibatching.kotpref:kotpref:2.5.0'
+  
+    // optional, auto initialization module
+    compile 'com.chibatching.kotpref:initializer:2.5.0'
+  
+    // optional, support saving enum value and ordinal
+    compile 'com.chibatching.kotpref:enum-support:2.5.0'
+  
+    // optional, support saving json string through Gson
+    compile 'com.chibatching.kotpref:gson-support:2.5.0'
+    compile 'com.google.code.gson:gson:2.8.2'
+  
+    // optional, support LiveData observable preference
+    compile 'com.chibatching.kotpref:livedata-support:2.5.0'
+    compile 'android.arch.lifecycle:livedata:1.1.0'
+    compile "org.jetbrains.kotlin:kotlin-reflect:1.2.21"
 }
 ```
 
@@ -173,19 +184,6 @@ Override `kotprefMode` property. Default is `Context.MODE_PRIVATE`.
 object UserInfo : KotprefModel() {
     override val kotprefMode: Int = Context.MODE_MULTI_PROCESS
 ```
-
-### Migration from v1
-
-#### Change function names providing delegated properties
-
-Kotpref v2 changes function names providing delegated properties.
-
-Example, old `stringPrefVar` is changed to `stringPref`.
-
-
-### Separate auto initialization module
-
-If you wish to use auto initialization, you should import initializer module.
 
 ## License
 

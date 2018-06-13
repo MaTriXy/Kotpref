@@ -1,25 +1,26 @@
+import dependencies.Deps
+import dependencies.Versions
+import plugin.BuildSettingHelperPlugin
+
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'jacoco'
+apply plugin: BuildSettingHelperPlugin
 
 ext.moduleName = 'Kotpref enum support'
 
-ext.VERSION_NAME = versionName
-ext.SDK_VERSION = sdkVersion
-ext.MIN_SDK = minSdkVersion
-ext.BUILD_TOOLS = buildToolsVersion
-
 android {
-    compileSdkVersion SDK_VERSION
-    buildToolsVersion BUILD_TOOLS
+    compileSdkVersion Versions.targetSdk
+    buildToolsVersion Versions.buildTools
 
     defaultConfig {
-        minSdkVersion MIN_SDK
-        targetSdkVersion SDK_VERSION
-        versionName VERSION_NAME
+        minSdkVersion Versions.minSdk
+        targetSdkVersion Versions.targetSdk
+        versionName Versions.versionName
     }
     buildTypes {
         debug {
-            testCoverageEnabled env("CI", "false") == "true"
+            testCoverageEnabled isCi
         }
         release {
             minifyEnabled false
@@ -39,25 +40,13 @@ android {
 }
 
 dependencies {
-    api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    compileOnly Deps.Kotlin.stdlib
     api project(":kotpref")
 
-    testImplementation "junit:junit:$junitVersion"
-    testImplementation "org.robolectric:robolectric:$robolectricVersion"
-    testImplementation "org.assertj:assertj-core:$assertjVersion"
-}
-
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-    }
-}
-
-repositories {
-    jcenter()
+    testImplementation Deps.Kotlin.stdlib
+    testImplementation Deps.junit
+    testImplementation Deps.robolectric
+    testImplementation Deps.assertj
 }
 
 apply from: "${project.rootDir}/gradle/publish/publish.gradle"
