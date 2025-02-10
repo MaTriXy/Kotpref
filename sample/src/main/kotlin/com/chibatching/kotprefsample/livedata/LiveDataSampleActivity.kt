@@ -1,27 +1,37 @@
 package com.chibatching.kotprefsample.livedata
 
-import android.arch.lifecycle.Observer
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import com.chibatching.kotpref.livedata.asLiveData
-import com.chibatching.kotprefsample.R
-import kotlinx.android.synthetic.main.activity_live_data_sample.*
+import com.chibatching.kotprefsample.databinding.ActivityLiveDataSampleBinding
 
 class LiveDataSampleActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_live_data_sample)
+        val binding = ActivityLiveDataSampleBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        saveButton.setOnClickListener {
-            EditTextData.savedText = editText.text.toString()
+        binding.saveButton.setOnClickListener {
+            EditTextData.savedText = binding.editText.text.toString()
+        }
+        binding.clearButton.setOnClickListener {
+            EditTextData.clear()
         }
 
         EditTextData
             .asLiveData(EditTextData::savedText)
-            .observe(this, Observer<String> {
-                textView.text = it
-            })
+            .observe(this) {
+                binding.textView.text = it
+            }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        if (super.onSupportNavigateUp()) {
+            return true
+        }
+        finish()
+        return true
     }
 }

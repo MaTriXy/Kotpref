@@ -1,37 +1,51 @@
 package com.chibatching.kotpref.livedata
 
-import android.arch.lifecycle.Observer
-import android.content.Context
+import android.app.Application
 import android.content.SharedPreferences
-import com.chibatching.kotpref.Kotpref
-import com.chibatching.kotpref.KotprefModel
-import org.assertj.core.api.Assertions.assertThat
+import android.os.Looper.getMainLooper
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.Observer
+import androidx.test.core.app.ApplicationProvider
+import com.google.common.truth.Truth.assertThat
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
+import io.mockk.verifySequence
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
-
+import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.LooperMode
 
 @RunWith(RobolectricTestRunner::class)
-class LiveDataSupportTest {
-    class Example : KotprefModel() {
-        var someProperty by stringPref("default")
-        var customKeyProperty by intPref(8, "custom_key")
+internal class LiveDataSupportTest {
+
+    data class GsonSample(
+        val text: String,
+        val number: Int
+    )
+
+    enum class EnumSample {
+        FIRST
     }
 
-    lateinit var example: Example
-    lateinit var context: Context
-    lateinit var pref: SharedPreferences
+    private lateinit var example: Example
+    private lateinit var pref: SharedPreferences
+
+    private fun <T> observer() = mockk<Observer<T>>(relaxed = true)
 
     @Before
     fun setUp() {
-        context = RuntimeEnvironment.application
-        Kotpref.init(context)
-        example = Example()
+        val context = ApplicationProvider.getApplicationContext<Application>()
+        example =
+            Example(context)
 
         pref = example.preferences
         pref.edit().clear().commit()
@@ -44,111 +58,199 @@ class LiveDataSupportTest {
 
     @Test
     fun providesDefaultValue() {
-        val latch = CountDownLatch(1)
-
         val liveData = example.asLiveData(example::someProperty)
-        liveData.observeForever {
-            assertThat(it).isEqualTo("default")
-            latch.countDown()
-        }
+        val observer = observer<String>()
 
-        latch.await(1, TimeUnit.SECONDS)
+        liveData.observeForever(observer)
+
+        verify(exactly = 1) {
+            observer.onChanged("default")
+        }
     }
 
     @Test
     fun providesDefaultValueWithCustomKey() {
-        val latch = CountDownLatch(1)
-
         val liveData = example.asLiveData(example::customKeyProperty)
-        liveData.observeForever {
-            assertThat(it).isEqualTo(8)
-            latch.countDown()
-        }
+        val observer = observer<Int>()
 
-        latch.await(1, TimeUnit.SECONDS)
+        liveData.observeForever(observer)
+
+        verify(exactly = 1) {
+            observer.onChanged(8)
+        }
+    }
+
+    @Test
+    fun providesDefaultValueWithGson() {
+        val liveData = example.asLiveData(example::gsonPref)
+        val observer = observer<GsonSample>()
+
+        liveData.observeForever(observer)
+
+        verify(exactly = 1) {
+            observer.onChanged(Example.gsonSampleDefault)
+        }
+    }
+
+    @Test
+    fun providesDefaultValueWithEnum() {
+        val liveData = example.asLiveData(example::enumPref)
+        val observer = observer<EnumSample>()
+
+        liveData.observeForever(observer)
+
+        verify(exactly = 1) {
+            observer.onChanged(EnumSample.FIRST)
+        }
+    }
+
+    @Test
+    fun providesDefaultValueWithStringSet() {
+        val liveData = example.asLiveData(example::setPref)
+        val observer = observer<Set<String>>()
+
+        val slot = slot<Set<String>>()
+        every {
+            observer.onChanged(capture(slot))
+        } just Runs
+
+        liveData.observeForever(observer)
+
+        verify(exactly = 1) {
+            observer.onChanged(any())
+        }
+        assertThat(slot.captured).containsExactlyElementsIn(Example.defaultSet)
     }
 
     @Test
     fun firesValueChanges() {
-        val latch = CountDownLatch(3)
-
-        val values = listOf("default", "some value 1", "value 2")
-        var i = 0
         val liveData = example.asLiveData(example::someProperty)
-        liveData.observeForever {
-            assertThat(it).isEqualTo(values[i++])
-            latch.countDown()
-        }
-        example.someProperty = values[1]
-        example.someProperty = values[2]
+        val observer = observer<String>()
 
-        latch.await(1, TimeUnit.SECONDS)
+        liveData.observeForever(observer)
+
+        example.someProperty = "some value 1"
+        shadowOf(getMainLooper()).idle()
+
+        example.someProperty = "value 2"
+        shadowOf(getMainLooper()).idle()
+
+        verifySequence {
+            observer.onChanged("default")
+            observer.onChanged("some value 1")
+            observer.onChanged("value 2")
+        }
     }
 
     @Test
     fun firesValueChangesWithCustomKey() {
-        val latch = CountDownLatch(3)
-
-        val values = listOf(8, 1, 12)
-        var i = 0
         val liveData = example.asLiveData(example::customKeyProperty)
-        liveData.observeForever {
-            assertThat(it).isEqualTo(values[i++])
-            latch.countDown()
-        }
-        example.customKeyProperty = values[1]
-        example.customKeyProperty = values[2]
+        val observer = observer<Int>()
 
-        latch.await(1, TimeUnit.SECONDS)
+        liveData.observeForever(observer)
+
+        example.customKeyProperty = 1
+        shadowOf(getMainLooper()).idle()
+
+        example.customKeyProperty = 12
+        shadowOf(getMainLooper()).idle()
+
+        verifySequence {
+            observer.onChanged(8)
+            observer.onChanged(1)
+            observer.onChanged(12)
+        }
     }
 
     @Test
     fun firesLatestValueOnObserve() {
-        val latch = CountDownLatch(5)
-
-        val values = listOf("some value 1", "value 2")
-        val expectedResults = listOf("default", "default", values[0], values[0], values[1])
-        var i = 0
-
         val liveData = example.asLiveData(example::someProperty)
-        val observer = Observer<String> {
-            assertThat(it).isEqualTo(expectedResults[i++])
-            latch.countDown()
-        }
+        val observerSlot = mutableListOf<String>()
+        val observer = observer<String>()
+
+        every {
+            observer.onChanged(capture(observerSlot))
+        } just Runs
+
         liveData.observeForever(observer)
         liveData.removeObserver(observer)
 
-        (0..1).forEach {
-            liveData.observeForever(observer)
-            example.someProperty = values[it]
-            liveData.removeObserver(observer)
-        }
+        example.someProperty = "some value 1"
+        example.someProperty = "value 2"
 
-        latch.await(1, TimeUnit.SECONDS)
+        liveData.observeForever(observer)
+
+        assertThat(observerSlot)
+            .containsExactly("default", "value 2")
     }
 
     @Test
     fun firesLatestValueOnObserveWithCustomKey() {
-        val latch = CountDownLatch(5)
-
-        val values = listOf(1, 12)
-        val expectedResults = listOf(8, 8, values[0], values[0], values[1])
-        var i = 0
-
         val liveData = example.asLiveData(example::customKeyProperty)
-        val observer = Observer<Int> {
-            assertThat(it).isEqualTo(expectedResults[i++])
-            latch.countDown()
-        }
+        val observerSlot = mutableListOf<Int>()
+        val observer = observer<Int>()
+
+        every {
+            observer.onChanged(capture(observerSlot))
+        } just Runs
+
         liveData.observeForever(observer)
         liveData.removeObserver(observer)
 
-        (0..1).forEach {
-            liveData.observeForever(observer)
-            example.customKeyProperty = values[it]
-            liveData.removeObserver(observer)
-        }
+        example.customKeyProperty = 1
+        example.customKeyProperty = 12
 
-        latch.await(1, TimeUnit.SECONDS)
+        liveData.observeForever(observer)
+
+        assertThat(observerSlot)
+            .containsExactly(8, 12)
+    }
+
+    @Test
+    fun firesLastValueWhileInactive() {
+        val liveData = example.asLiveData(example::someProperty)
+        val observerSlot = mutableListOf<String>()
+        val observer = observer<String>()
+        val lifecycle = LifecycleRegistry(mockk(relaxed = true))
+
+        every {
+            observer.onChanged(capture(observerSlot))
+        } just Runs
+
+        liveData.observe(LifecycleOwner { lifecycle }, observer)
+        lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_START)
+        lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+
+        example.someProperty = "some value 1"
+        example.someProperty = "value 2"
+
+        lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_START)
+
+        assertThat(observerSlot)
+            .containsExactly("default", "value 2")
+    }
+
+    @Test
+    fun firesLastValueWhileInactiveWithCustomKey() {
+        val liveData = example.asLiveData(example::customKeyProperty)
+        val observerSlot = mutableListOf<Int>()
+        val observer = observer<Int>()
+        val lifecycle = LifecycleRegistry(mockk(relaxed = true))
+
+        every {
+            observer.onChanged(capture(observerSlot))
+        } just Runs
+
+        liveData.observe(LifecycleOwner { lifecycle }, observer)
+        lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_START)
+        lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+
+        example.customKeyProperty = 1
+        example.customKeyProperty = 12
+
+        lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_START)
+
+        assertThat(observerSlot)
+            .containsExactly(8, 12)
     }
 }

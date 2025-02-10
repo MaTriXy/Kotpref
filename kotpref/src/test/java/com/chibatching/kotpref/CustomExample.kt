@@ -1,9 +1,20 @@
 package com.chibatching.kotpref
 
-import java.util.*
+import android.content.Context
+import com.chibatching.kotpref.pref.booleanPref
+import com.chibatching.kotpref.pref.floatPref
+import com.chibatching.kotpref.pref.intPref
+import com.chibatching.kotpref.pref.longPref
+import com.chibatching.kotpref.pref.nullableStringPref
+import com.chibatching.kotpref.pref.stringPref
+import com.chibatching.kotpref.pref.stringSetPref
+import java.util.LinkedHashSet
 
+internal class CustomExample(
+    private val commitAllProperties: Boolean,
+    context: Context
+) : KotprefModel(context) {
 
-class CustomExample(private val commitAllProperties: Boolean) : KotprefModel() {
     override val commitAllPropertiesByDefault: Boolean
         get() = commitAllProperties
 
@@ -17,7 +28,10 @@ class CustomExample(private val commitAllProperties: Boolean) : KotprefModel() {
     var testFloat by floatPref(Float.MAX_VALUE, R.string.test_custom_float)
     var testBoolean by booleanPref(true, R.string.test_custom_boolean)
     var testString by stringPref("default", R.string.test_custom_string)
-    var testStringNullable by nullableStringPref("nullable default", R.string.test_custom_nullable_string)
+    var testStringNullable by nullableStringPref(
+        "nullable default",
+        R.string.test_custom_nullable_string
+    )
     val testStringSet by stringSetPref(R.string.test_custom_string_set) {
         val defSet = LinkedHashSet<String>()
         defSet.add("Lazy set item 1")

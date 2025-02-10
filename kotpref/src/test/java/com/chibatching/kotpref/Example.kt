@@ -1,9 +1,16 @@
 package com.chibatching.kotpref
 
-import java.util.*
+import android.content.Context
+import com.chibatching.kotpref.pref.booleanPref
+import com.chibatching.kotpref.pref.floatPref
+import com.chibatching.kotpref.pref.intPref
+import com.chibatching.kotpref.pref.longPref
+import com.chibatching.kotpref.pref.nullableStringPref
+import com.chibatching.kotpref.pref.stringPref
+import com.chibatching.kotpref.pref.stringSetPref
+import java.util.TreeSet
 
-
-class Example(private val commitAllProperties: Boolean) : KotprefModel() {
+internal class Example(private val commitAllProperties: Boolean, context: Context) : KotprefModel(context) {
     override val commitAllPropertiesByDefault: Boolean
         get() = commitAllProperties
 
@@ -13,5 +20,5 @@ class Example(private val commitAllProperties: Boolean) : KotprefModel() {
     var testBoolean by booleanPref()
     var testString by stringPref()
     var testStringNullable by nullableStringPref()
-    val testStringSet by stringSetPref(TreeSet<String>())
+    val testStringSet by stringSetPref(TreeSet())
 }

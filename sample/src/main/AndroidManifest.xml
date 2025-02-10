@@ -1,29 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.chibatching.kotprefsample">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.chibatching.kotprefsample">
+
+    <uses-sdk tools:overrideLibrary="androidx.security" />
 
     <application
         android:name=".SampleApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name=".MainActivity"
+            android:exported="true"
             android:label="@string/app_name">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".livedata.LiveDataSampleActivity"
+            android:exported="false"
             android:label="@string/live_data_sample"
-        />
+            android:parentActivityName=".MainActivity"
+            tools:targetApi="jelly_bean" />
         <activity
             android:name=".preferencefragment.PreferenceFragmentSampleActivity"
+            android:exported="false"
             android:label="@string/preference_fragment_sample"
-        />
+            android:parentActivityName=".MainActivity"
+            tools:targetApi="jelly_bean" />
+        <activity
+            android:name=".preferencedsl.PreferenceScreenDslSampleActivity"
+            android:exported="false"
+            android:label="@string/preference_fragment_sample"
+            android:parentActivityName=".MainActivity"
+            tools:targetApi="jelly_bean" />
+        <activity
+            android:name=".injectablecontext.InjectableContextSampleActivity"
+            android:exported="false"
+            android:label="@string/injectable_context_sample"
+            android:parentActivityName=".MainActivity"
+            tools:targetApi="jelly_bean" />
+        <activity
+            android:name=".encrypt.EncryptionSampleActivity"
+            android:exported="false"
+            android:label="@string/encryption_sample"
+            android:parentActivityName=".MainActivity"
+            tools:targetApi="jelly_bean" />
     </application>
 </manifest>

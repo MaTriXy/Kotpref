@@ -4,14 +4,15 @@ import plugin.BuildSettingHelperPlugin
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'jacoco'
 apply plugin: BuildSettingHelperPlugin
 
 ext.moduleName = 'Kotpref gson support'
+ext.moduleDescription = "Serialize/Deserialize json object to KotprefModel using Gson"
 
 android {
     compileSdkVersion Versions.targetSdk
-    buildToolsVersion Versions.buildTools
 
     defaultConfig {
         minSdkVersion Versions.minSdk
@@ -19,9 +20,6 @@ android {
         versionName Versions.versionName
     }
     buildTypes {
-        debug {
-            testCoverageEnabled isCi
-        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -31,11 +29,26 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
     testOptions {
-        unitTests.all {
-            jacoco {
-                includeNoLocationClasses = true
+        unitTests {
+            all {
+                jacoco {
+                    includeNoLocationClasses = true
+                    excludes = ['jdk.internal.*']
+                }
             }
+            includeAndroidResources = true
         }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+        freeCompilerArgs += "-Xexplicit-api=strict"
+    }
+    jacoco {
+        version = Versions.jacoco
     }
 }
 
@@ -49,7 +62,10 @@ dependencies {
     testImplementation Deps.gson
     testImplementation Deps.junit
     testImplementation Deps.robolectric
-    testImplementation Deps.assertj
+    testImplementation Deps.AndroidX.testCore
+    testImplementation Deps.truth
+
+    dokkaHtmlPlugin Deps.dokkaJava
 }
 
 apply from: "${project.rootDir}/gradle/publish/publish.gradle"

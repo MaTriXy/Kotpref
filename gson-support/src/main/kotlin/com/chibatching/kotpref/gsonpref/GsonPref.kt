@@ -8,25 +8,38 @@ import com.chibatching.kotpref.pref.AbstractPref
 import java.lang.reflect.Type
 import kotlin.reflect.KProperty
 
+public class GsonPref<T : Any>(
+    private val targetType: Type,
+    private val default: () -> T,
+    override val key: String?,
+    private val commitByDefault: Boolean
+) : AbstractPref<T>() {
 
-class GsonPref<T : Any>(val targetType: Type, val default: T, override val key: String?, private val commitByDefault: Boolean) : AbstractPref<T>() {
+    public constructor(
+        targetType: Type,
+        default: T,
+        key: String?,
+        commitByDefault: Boolean
+    ) : this(
+        targetType, { default }, key, commitByDefault
+    )
 
     override fun getFromPreference(property: KProperty<*>, preference: SharedPreferences): T {
-        return preference.getString(key ?: property.name, null)?.let { json ->
-            deserializeFromJson(json) ?: default
-        } ?: default
+        return preference.getString(preferenceKey, null)?.let { json ->
+            deserializeFromJson(json) ?: default()
+        } ?: default()
     }
 
     @SuppressLint("CommitPrefEdits")
     override fun setToPreference(property: KProperty<*>, value: T, preference: SharedPreferences) {
         serializeToJson(value).let { json ->
-            preference.edit().putString(key ?: property.name, json).execute(commitByDefault)
+            preference.edit().putString(preferenceKey, json).execute(commitByDefault)
         }
     }
 
     override fun setToEditor(property: KProperty<*>, value: T, editor: SharedPreferences.Editor) {
         serializeToJson(value).let { json ->
-            editor.putString(key ?: property.name, json)
+            editor.putString(preferenceKey, json)
         }
     }
 

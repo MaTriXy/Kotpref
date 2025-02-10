@@ -1,15 +1,15 @@
 package com.chibatching.kotpref.pref
 
+import android.content.Context
 import com.chibatching.kotpref.R
-import org.assertj.core.api.Assertions.assertThat
+import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.ParameterizedRobolectricTestRunner
-import java.util.*
-
+import java.util.Arrays
 
 @RunWith(ParameterizedRobolectricTestRunner::class)
-class StringPrefTest(commitAllProperties: Boolean) : BasePrefTest(commitAllProperties) {
+internal class StringPrefTest(commitAllProperties: Boolean) : BasePrefTest(commitAllProperties) {
     companion object {
         @JvmStatic
         @ParameterizedRobolectricTestRunner.Parameters(name = "commitAllProperties = {0}")
@@ -26,8 +26,10 @@ class StringPrefTest(commitAllProperties: Boolean) : BasePrefTest(commitAllPrope
     @Test
     fun setValueToStringPref() {
         example.testString = "Ohayo!"
-        assertThat(example.testString).isEqualTo("Ohayo!")
-        assertThat(example.testString).isEqualTo(examplePref.getString("testString", ""))
+        assertThat(example.testString)
+            .isEqualTo("Ohayo!")
+        assertThat(example.testString)
+            .isEqualTo(examplePref.getString("testString", ""))
     }
 
     @Test
@@ -38,7 +40,34 @@ class StringPrefTest(commitAllProperties: Boolean) : BasePrefTest(commitAllPrope
     @Test
     fun useCustomPreferenceKey() {
         customExample.testString = "Hello"
-        assertThat(customExample.testString).isEqualTo("Hello")
-        assertThat(customExample.testString).isEqualTo(customPref.getString(context.getString(R.string.test_custom_string), null))
+        assertThat(customExample.testString)
+            .isEqualTo("Hello")
+        assertThat(customExample.testString)
+            .isEqualTo(customPref.getString(context.getString(R.string.test_custom_string), null))
+    }
+
+    @Test
+    fun readFromOtherPreferenceInstance() {
+        val otherPreference =
+            context.getSharedPreferences(example.kotprefName, Context.MODE_PRIVATE)
+
+        example.testStringNullable = "Hello world"
+
+        assertThat(otherPreference.getString("testStringNullable", null))
+            .isEqualTo("Hello world")
+    }
+
+    @Test
+    fun writeFromOtherPreferenceInstance() {
+        val otherPreference =
+            context.getSharedPreferences(example.kotprefName, Context.MODE_PRIVATE)
+
+        example.testString
+
+        otherPreference.edit()
+            .putString("testStringNullable", "Hello world")
+            .commit()
+
+        assertThat(example.testStringNullable).isEqualTo("Hello world")
     }
 }

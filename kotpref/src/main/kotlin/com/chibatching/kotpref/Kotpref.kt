@@ -5,23 +5,20 @@ import android.content.Context
 /**
  * Kotpref: SharedPreference delegation for Kotlin
  */
-object Kotpref {
-
-    /**
-     * Internal context. If context is not set, Kotpref will throw [IllegalStateException].
-     */
-    internal var context: Context? = null
-        get() {
-            return field ?: throw IllegalStateException("Kotpref has not been initialized.")
-        }
-        private set
+public object Kotpref {
 
     /**
      * Initialize Kotpref singleton object.
      *
      * @param context Application context
      */
-    fun init(context: Context) {
-        this.context = context.applicationContext
+    public fun init(context: Context) {
+        StaticContextProvider.setContext(context.applicationContext)
     }
+
+    /**
+     * Return true if Kotpref singleton object is initialized via [init] function
+     */
+    public val isInitialized: Boolean
+        get() = StaticContextProvider.isInitialized
 }

@@ -1,31 +1,38 @@
 package dependencies
 
+@Suppress("unused")
 object Deps {
 
-    val androidGradlePlugin = "com.android.tools.build:gradle:${Versions.androidGradlePlugin}"
-    val bintrayGradlePlugin = "com.jfrog.bintray.gradle:gradle-bintray-plugin:${Versions.bintrayGradlePlugin}"
-    val androidMavenGradlePlugin = "com.github.dcendents:android-maven-gradle-plugin:${Versions.androidMavenGradlePlugin}"
-    val dokkaAndroidGradlePlugin = "org.jetbrains.dokka:dokka-android-gradle-plugin:${Versions.dokkaAndroidGradlePlugin}"
+    const val androidGradlePlugin = "com.android.tools.build:gradle:${Versions.androidGradlePlugin}"
 
-    val junit = "junit:junit:${Versions.junit}"
-    val robolectric = "org.robolectric:robolectric:${Versions.robolectric}"
-    val assertj = "org.assertj:assertj-core:${Versions.assertj}"
+    const val dokkaGradlePlugin =
+        "org.jetbrains.dokka:dokka-gradle-plugin:${Versions.dokka}"
+    const val dokkaJava =
+        "org.jetbrains.dokka:kotlin-as-java-plugin:${Versions.dokka}"
 
-    val gson = "com.google.code.gson:gson:${Versions.gson}"
+    const val junit = "junit:junit:${Versions.junit}"
+    const val robolectric = "org.robolectric:robolectric:${Versions.robolectric}"
+    const val mockk = "io.mockk:mockk:${Versions.mockk}"
+    const val truth = "com.google.truth:truth:${Versions.truth}"
+
+    const val gson = "com.google.code.gson:gson:${Versions.gson}"
 
     object Kotlin {
-        val stdlib = "org.jetbrains.kotlin:kotlin-stdlib:${Versions.kotlin}"
-        val reflect = "org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlin}"
-        val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}"
+        const val stdlib = "org.jetbrains.kotlin:kotlin-stdlib:${Versions.kotlin}"
+        const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}"
     }
 
     object Arch {
-        val liveData = "android.arch.lifecycle:livedata:${Versions.arch}"
+        const val liveData = "androidx.lifecycle:lifecycle-livedata:${Versions.AndroidX.liveData}"
+        const val runtime = "androidx.lifecycle:lifecycle-runtime:${Versions.AndroidX.liveData}"
     }
 
-    object SupportLibrary {
-        val supportV4 = "com.android.support:support-v4:${Versions.supportLibrary}"
-        val appCompatV7 = "com.android.support:appcompat-v7:${Versions.supportLibrary}"
-        val preferenceV7 = "com.android.support:preference-v7:${Versions.supportLibrary}"
+    object AndroidX {
+        const val annotation = "androidx.annotation:annotation:${Versions.AndroidX.annotation}"
+        const val appCompat = "androidx.appcompat:appcompat:${Versions.AndroidX.appCompat}"
+        const val preference = "androidx.preference:preference:${Versions.AndroidX.preference}"
+        const val security = "androidx.security:security-crypto:${Versions.AndroidX.security}"
+        const val startup = "androidx.startup:startup-runtime:${Versions.AndroidX.startup}"
+        const val testCore = "androidx.test:core:${Versions.AndroidX.test}"
     }
 }

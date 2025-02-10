@@ -1,21 +1,21 @@
 package com.chibatching.kotpref
 
 import android.annotation.TargetApi
-import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
-import org.assertj.core.api.Assertions.assertThat
+import androidx.test.core.app.ApplicationProvider
+import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.ParameterizedRobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
-import java.util.*
-
+import java.util.Arrays
+import java.util.HashSet
+import java.util.TreeSet
 
 @RunWith(ParameterizedRobolectricTestRunner::class)
-class BulkEditTest(private val commitAllProperties: Boolean) {
+internal class BulkEditTest(private val commitAllProperties: Boolean) {
     companion object {
         @JvmStatic
         @ParameterizedRobolectricTestRunner.Parameters(name = "commitAllProperties = {0}")
@@ -25,14 +25,11 @@ class BulkEditTest(private val commitAllProperties: Boolean) {
     }
 
     lateinit var example: Example
-    lateinit var context: Context
     lateinit var pref: SharedPreferences
 
     @Before
     fun setUp() {
-        context = RuntimeEnvironment.application
-        Kotpref.init(context)
-        example = Example(commitAllProperties)
+        example = Example(commitAllProperties, ApplicationProvider.getApplicationContext())
 
         pref = example.preferences
         pref.edit().clear().commit()
@@ -93,9 +90,9 @@ class BulkEditTest(private val commitAllProperties: Boolean) {
             testStringSet.add("test3")
             testStringSet.remove("test2")
 
-            assertThat(testStringSet).containsExactlyInAnyOrder("test1", "test3")
+            assertThat(testStringSet).containsExactly("test1", "test3")
         }
-        assertThat(example.testStringSet).containsExactlyInAnyOrder("test1", "test3")
+        assertThat(example.testStringSet).containsExactly("test1", "test3")
     }
 
     @Test
@@ -108,9 +105,12 @@ class BulkEditTest(private val commitAllProperties: Boolean) {
             testStringSet.add("test3")
             testStringSet.remove("test2")
 
-            assertThat(pref.getStringSet("testStringSet", null)).containsExactlyInAnyOrder("test1")
+            assertThat(pref.getStringSet("testStringSet", null)).containsExactly("test1")
         }
-        assertThat(pref.getStringSet("testStringSet", null)).containsExactlyInAnyOrder("test1", "test3")
+        assertThat(pref.getStringSet("testStringSet", null)).containsExactly(
+            "test1",
+            "test3"
+        )
     }
 
     @Test
@@ -126,9 +126,9 @@ class BulkEditTest(private val commitAllProperties: Boolean) {
         example.bulk {
             testStringSet.addAll(addSet)
 
-            assertThat(testStringSet).containsExactlyInAnyOrder("test1", "test2", "test3")
+            assertThat(testStringSet).containsExactly("test1", "test2", "test3")
         }
-        assertThat(example.testStringSet).containsExactlyInAnyOrder("test1", "test2", "test3")
+        assertThat(example.testStringSet).containsExactly("test1", "test2", "test3")
     }
 
     @Test
@@ -144,9 +144,13 @@ class BulkEditTest(private val commitAllProperties: Boolean) {
         example.bulk {
             testStringSet.addAll(addSet)
 
-            assertThat(pref.getStringSet("testStringSet", null)).containsExactlyInAnyOrder("test1")
+            assertThat(pref.getStringSet("testStringSet", null)).containsExactly("test1")
         }
-        assertThat(pref.getStringSet("testStringSet", null)).containsExactlyInAnyOrder("test1", "test2", "test3")
+        assertThat(pref.getStringSet("testStringSet", null)).containsExactly(
+            "test1",
+            "test2",
+            "test3"
+        )
     }
 
     @Test
@@ -166,9 +170,9 @@ class BulkEditTest(private val commitAllProperties: Boolean) {
         example.bulk {
             testStringSet.removeAll(removeSet)
 
-            assertThat(testStringSet).containsExactlyInAnyOrder("test2")
+            assertThat(testStringSet).containsExactly("test2")
         }
-        assertThat(example.testStringSet).containsExactlyInAnyOrder("test2")
+        assertThat(example.testStringSet).containsExactly("test2")
     }
 
     @Test
@@ -188,9 +192,13 @@ class BulkEditTest(private val commitAllProperties: Boolean) {
         example.bulk {
             testStringSet.removeAll(removeSet)
 
-            assertThat(pref.getStringSet("testStringSet", null)).containsExactlyInAnyOrder("test1", "test2", "test3")
+            assertThat(pref.getStringSet("testStringSet", null)).containsExactly(
+                "test1",
+                "test2",
+                "test3"
+            )
         }
-        assertThat(pref.getStringSet("testStringSet", null)).containsExactlyInAnyOrder("test2")
+        assertThat(pref.getStringSet("testStringSet", null)).containsExactly("test2")
     }
 
     @Test
@@ -211,9 +219,9 @@ class BulkEditTest(private val commitAllProperties: Boolean) {
         example.bulk {
             testStringSet.retainAll(retainSet)
 
-            assertThat(testStringSet).containsExactlyInAnyOrder("test1", "test3")
+            assertThat(testStringSet).containsExactly("test1", "test3")
         }
-        assertThat(example.testStringSet).containsExactlyInAnyOrder("test1", "test3")
+        assertThat(example.testStringSet).containsExactly("test1", "test3")
     }
 
     @Test
@@ -234,9 +242,16 @@ class BulkEditTest(private val commitAllProperties: Boolean) {
         example.bulk {
             testStringSet.retainAll(retainSet)
 
-            assertThat(pref.getStringSet("testStringSet", null)).containsExactlyInAnyOrder("test1", "test2", "test3")
+            assertThat(pref.getStringSet("testStringSet", null)).containsExactly(
+                "test1",
+                "test2",
+                "test3"
+            )
         }
-        assertThat(pref.getStringSet("testStringSet", null)).containsExactlyInAnyOrder("test1", "test3")
+        assertThat(pref.getStringSet("testStringSet", null)).containsExactly(
+            "test1",
+            "test3"
+        )
     }
 
     @Test
@@ -259,11 +274,11 @@ class BulkEditTest(private val commitAllProperties: Boolean) {
                 iterator.remove()
             }
 
-            assertThat(example.testStringSet).containsAll(originalCopy - deletedItem)
-            assertThat(pref.getStringSet("testStringSet", null)).containsAll(originalCopy)
+            assertThat(example.testStringSet).containsExactlyElementsIn(originalCopy - deletedItem)
+            assertThat(pref.getStringSet("testStringSet", null)).containsExactlyElementsIn(originalCopy)
         }
 
-        assertThat(example.testStringSet).containsAll(originalCopy - deletedItem)
-        assertThat(pref.getStringSet("testStringSet", null)).containsAll(originalCopy - deletedItem)
+        assertThat(example.testStringSet).containsExactlyElementsIn(originalCopy - deletedItem)
+        assertThat(pref.getStringSet("testStringSet", null)).containsExactlyElementsIn(originalCopy - deletedItem)
     }
 }

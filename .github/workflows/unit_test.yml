@@ -1,0 +1,26 @@
+name: Unit test
+
+on:
+  pull_request:
+  push:
+    branches: [ master ]
+
+jobs:
+  validate:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 13
+      - name: Setup gradle cache
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/master' }}
+      - name: Unit test
+        run: ./gradlew jacocoTestReport --stacktrace
+      - name: Upload coverage report to codecov
+        uses: codecov/codecov-action@v2

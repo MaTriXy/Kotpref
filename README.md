@@ -2,29 +2,35 @@
 
 Android SharedPreference delegation for Kotlin.
 
-[![wercker status](https://app.wercker.com/status/dd188c571c2416d90eb24133d9bcfa83/s/master "wercker status")](https://app.wercker.com/project/byKey/dd188c571c2416d90eb24133d9bcfa83) [![kotlin](https://img.shields.io/badge/kotlin-1.2.21-blue.svg)]() [![codecov](https://codecov.io/gh/chibatching/Kotpref/branch/master/graph/badge.svg)](https://codecov.io/gh/chibatching/Kotpref) [![license](https://img.shields.io/github/license/chibatching/Kotpref.svg?maxAge=2592000)]()
+[![kotlin](https://img.shields.io/badge/kotlin-1.4.10-blue.svg)]() [![codecov](https://codecov.io/gh/chibatching/Kotpref/branch/master/graph/badge.svg)](https://codecov.io/gh/chibatching/Kotpref) [![license](https://img.shields.io/github/license/chibatching/Kotpref.svg?maxAge=2592000)]()
 
 ## Install
 
 ```groovy
+repositories {
+    mavenCentral()
+}
+
 dependencies {
     // core
-    compile 'com.chibatching.kotpref:kotpref:2.5.0'
+    implementation 'com.chibatching.kotpref:kotpref:2.13.1'
   
     // optional, auto initialization module
-    compile 'com.chibatching.kotpref:initializer:2.5.0'
+    implementation 'com.chibatching.kotpref:initializer:2.13.1'
   
     // optional, support saving enum value and ordinal
-    compile 'com.chibatching.kotpref:enum-support:2.5.0'
+    implementation 'com.chibatching.kotpref:enum-support:2.13.1'
   
     // optional, support saving json string through Gson
-    compile 'com.chibatching.kotpref:gson-support:2.5.0'
-    compile 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.chibatching.kotpref:gson-support:2.13.1'
+    implementation 'com.google.code.gson:gson:2.8.6'
   
     // optional, support LiveData observable preference
-    compile 'com.chibatching.kotpref:livedata-support:2.5.0'
-    compile 'android.arch.lifecycle:livedata:1.1.0'
-    compile "org.jetbrains.kotlin:kotlin-reflect:1.2.21"
+    implementation 'com.chibatching.kotpref:livedata-support:2.13.1'
+    implementation 'androidx.lifecycle:lifecycle-livedata:2.2.0'
+
+    // experimental, preference screen build dsl
+    implementation 'com.chibatching.kotpref:preference-screen-dsl:2.13.1'
 }
 ```
 
@@ -34,7 +40,6 @@ dependencies {
 
 ```kotlin
 object UserInfo : KotprefModel() {
-    var gameLevel by enumValuePref(GameLevel.NORMAL)
     var name by stringPref()
     var code by nullableStringPref()
     var age by intPref(default = 14)
@@ -64,6 +69,19 @@ Kotpref.init(context)
 
 or use auto initializer module.
 
+### Injectable Context
+
+If you don't want to use singleton context because of unit test or etc.., you can use secondary 
+constructor of KotprefModel to inject context.  
+
+```kotlin
+class InjectableContextSamplePref(context: Context) : KotprefModel(context) {
+    var sampleData by stringPref()
+}
+```
+
+If you set context to all your model, you don't need call `Kotpref.init(context)` and don't use auto initializer module.
+
 ### Read and Write
 
 ```kotlin
@@ -83,7 +101,7 @@ Log.d(TAG, "User code: ${UserInfo.code}")
 Log.d(TAG, "User age: ${UserInfo.age}")
 Log.d(TAG, "User high score: ${UserInfo.highScore}")
 Log.d(TAG, "User rate: ${UserInfo.rate}")
-UserInfo.prizes.forEachIndexed { i, s -> Log.d(TAG, "prize[$i]: ${s}") }
+UserInfo.prizes.forEachIndexed { i, s -> Log.d(TAG, "prize[$i]: $s") }
 ```
 
 ### Bulk edit
@@ -151,7 +169,7 @@ var useFunc1: Boolean by booleanPref(key = "use_func1")
 var mode: Int by intPref(default = 1, key = R.string.pref_mode)
 ```
 
-### Change default save mode
+#### Change default save mode
 
 Kotpref save all preference property by `apply` method.
 You can change method to `commit` for each property.
@@ -185,10 +203,14 @@ object UserInfo : KotprefModel() {
     override val kotprefMode: Int = Context.MODE_MULTI_PROCESS
 ```
 
+## API Docs
+
+[https://chibatching.github.io/Kotpref/docs/api/-modules.html](https://chibatching.github.io/Kotpref/docs/api/-modules.html)
+
 ## License
 
 ```
-Copyright 2015-2018 Takao Chiba
+Copyright 2015-2021 Takao Chiba
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

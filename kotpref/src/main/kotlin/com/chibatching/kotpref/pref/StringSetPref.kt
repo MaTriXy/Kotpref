@@ -3,17 +3,69 @@ package com.chibatching.kotpref.pref
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.os.Build
+import android.os.SystemClock
 import com.chibatching.kotpref.KotprefModel
 import com.chibatching.kotpref.execute
-import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
+
+/**
+ * Delegate string set shared preferences property.
+ * @param default default string set value
+ * @param key custom preferences key
+ * @param commitByDefault commit this property instead of apply
+ */
+@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+public fun KotprefModel.stringSetPref(
+    default: Set<String> = LinkedHashSet(),
+    key: String? = null,
+    commitByDefault: Boolean = commitAllPropertiesByDefault
+): AbstractStringSetPref = stringSetPref(key, commitByDefault) { default }
+
+/**
+ * Delegate string set shared preferences property.
+ * @param default default string set value
+ * @param key custom preferences key resource id
+ * @param commitByDefault commit this property instead of apply
+ */
+@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+public fun KotprefModel.stringSetPref(
+    default: Set<String> = LinkedHashSet(),
+    key: Int,
+    commitByDefault: Boolean = commitAllPropertiesByDefault
+): AbstractStringSetPref = stringSetPref(context.getString(key), commitByDefault) { default }
+
+/**
+ * Delegate string set shared preferences property.
+ * @param key custom preferences key
+ * @param commitByDefault commit this property instead of apply
+ * @param default default string set value creation function
+ */
+@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+public fun KotprefModel.stringSetPref(
+    key: String? = null,
+    commitByDefault: Boolean = commitAllPropertiesByDefault,
+    default: () -> Set<String>
+): AbstractStringSetPref = StringSetPref(default, key, commitByDefault)
+
+/**
+ * Delegate string set shared preferences property.
+ * @param key custom preferences key resource id
+ * @param commitByDefault commit this property instead of apply
+ * @param default default string set value
+ */
+@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+public fun KotprefModel.stringSetPref(
+    key: Int,
+    commitByDefault: Boolean = commitAllPropertiesByDefault,
+    default: () -> Set<String>
+): AbstractStringSetPref = stringSetPref(context.getString(key), commitByDefault, default)
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 internal class StringSetPref(
     val default: () -> Set<String>,
     override val key: String?,
     private val commitByDefault: Boolean
-) : ReadOnlyProperty<KotprefModel, MutableSet<String>>, PreferenceKey {
+) : AbstractStringSetPref() {
 
     private var stringSet: MutableSet<String>? = null
     private var lastUpdate: Long = 0L
@@ -22,16 +74,17 @@ internal class StringSetPref(
         thisRef: KotprefModel,
         property: KProperty<*>
     ): MutableSet<String> {
-        if (stringSet == null || lastUpdate < thisRef.kotprefTransactionStartTime) {
-            val prefSet = thisRef.kotprefPreference.getStringSet(key ?: property.name, null)
-                ?.let { HashSet(it) }
-            stringSet = PrefMutableSet(
-                thisRef,
-                prefSet ?: default.invoke().toMutableSet(),
-                key ?: property.name
-            )
-            lastUpdate = System.currentTimeMillis()
+        if (stringSet != null && lastUpdate >= thisRef.kotprefTransactionStartTime) {
+            return stringSet!!
         }
+        val prefSet = thisRef.kotprefPreference.getStringSet(preferenceKey, null)
+            ?.let { HashSet(it) }
+        stringSet = PrefMutableSet(
+            thisRef,
+            prefSet ?: default.invoke().toMutableSet(),
+            preferenceKey
+        )
+        lastUpdate = SystemClock.uptimeMillis()
         return stringSet!!
     }
 
@@ -164,7 +217,8 @@ internal class StringSetPref(
             }
 
         private inner class KotprefMutableIterator(
-            val baseIterator: MutableIterator<String>, val inTransaction: Boolean
+            val baseIterator: MutableIterator<String>,
+            val inTransaction: Boolean
         ) : MutableIterator<String> by baseIterator {
 
             @SuppressLint("CommitPrefEdits")

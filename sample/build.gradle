@@ -3,11 +3,9 @@ import dependencies.Versions
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion Versions.targetSdk
-    buildToolsVersion Versions.buildTools
 
     defaultConfig {
         applicationId "com.chibatching.kotprefsample"
@@ -27,15 +25,24 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    buildFeatures {
+        viewBinding = true
+    }
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
     }
 }
 
 dependencies {
-    implementation Deps.SupportLibrary.supportV4
-    implementation Deps.SupportLibrary.appCompatV7
-    implementation Deps.SupportLibrary.preferenceV7
+    implementation Deps.AndroidX.appCompat
+    implementation Deps.AndroidX.preference
     implementation Deps.Kotlin.stdlib
 
     // core
@@ -54,6 +61,17 @@ dependencies {
     // LiveData support
     implementation project(":livedata-support")
     implementation Deps.Arch.liveData
-    implementation Deps.Kotlin.reflect
+
+    // Preference support
+    implementation project(':preference-screen-dsl')
+    implementation Deps.AndroidX.preference
+
+    implementation Deps.AndroidX.security
+
+    // For test
+    testImplementation Deps.junit
+    testImplementation Deps.robolectric
+    testImplementation Deps.truth
+    testImplementation Deps.mockk
 }
 
